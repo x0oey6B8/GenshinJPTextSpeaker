@@ -1,0 +1,26 @@
+﻿<UserControl x:Class="GenshinJPTextSpeaker.UserControls.LabeledSlider"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:GenshinJPTextSpeaker.UserControls"
+             mc:Ignorable="d" 
+             x:Name="view"
+             d:DesignHeight="450" d:DesignWidth="800">
+    <StackPanel Orientation="Horizontal">
+        <TextBlock VerticalAlignment="Center" Width="{Binding LabelWidth, ElementName=view}">
+            <Run Text="{Binding Label, ElementName=view, FallbackValue=100}"/>
+            <Run Text="("/>
+            <Run Text="{Binding Value, ElementName=view, FallbackValue=100}"/>
+            <Run Text="{Binding Unit, ElementName=view, FallbackValue=%}"/>
+            <Run Text=")"/>
+        </TextBlock>
+        <Slider Minimum="{Binding Minimum, ElementName=view}"
+                Maximum="{Binding Maximum, ElementName=view}"
+                Value="{Binding Value, ElementName=view, Mode=TwoWay}"
+                Width="{Binding SliderWidth, ElementName=view, FallbackValue=200}"
+                TickFrequency="{Binding Frequency, ElementName=view}" 
+                IsSnapToTickEnabled="True"
+                VerticalAlignment="Center"/>
+    </StackPanel>
+</UserControl>

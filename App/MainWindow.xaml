@@ -1,0 +1,172 @@
+﻿<Window x:Class="GenshinJPTextSpeaker.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:i="http://schemas.microsoft.com/xaml/behaviors"
+        xmlns:local="clr-namespace:GenshinJPTextSpeaker"
+        xmlns:u="clr-namespace:GenshinJPTextSpeaker.UserControls"
+        mc:Ignorable="d"
+        Topmost="{Binding AlwaysOnTop}"
+        Title="{Binding Title}"
+        Height="450"
+        Width="800"
+        SourceInitialized="Window_SourceInitialized"
+        Closing="Window_Closing">
+    <Window.Resources>
+        <local:RoundConverter x:Key="RoundConverter"/>
+        <local:ReverseConverter x:Key="ReverseConverter"/>
+        <Style TargetType="MenuItem">
+            <Setter Property="Height"
+                    Value="30"/>
+        </Style>
+    </Window.Resources>
+    <Window.DataContext>
+        <local:ViewModel/>
+    </Window.DataContext>
+    <i:Interaction.Triggers>
+        <i:EventTrigger x:Name="Loaded">
+            <i:InvokeCommandAction Command="{Binding FetchSpeakersCommand}"/>
+        </i:EventTrigger>
+    </i:Interaction.Triggers>
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition/>
+            <RowDefinition/>
+        </Grid.RowDefinitions>
+
+        <Menu>
+            <MenuItem Header="表示">
+                <MenuItem Header="最前面に表示"
+                          IsCheckable="True"
+                          IsChecked="{Binding AlwaysOnTop}"/>
+            </MenuItem>
+            <MenuItem Header="設定">
+                <MenuItem Header="通知">
+                    <MenuItem Header="有効無効の切り替えを音声で知らせる"
+                              IsCheckable="True"
+                              IsChecked="{Binding Notification.NotifyToggleEnabled}"/>
+                </MenuItem>
+                <MenuItem Header="OCR">
+                    <MenuItem Header="句点で行を分ける"
+                              IsCheckable="True"
+                              IsChecked="{Binding SplitByPeriod}"/>
+                </MenuItem>
+                <MenuItem Header="ボイス"
+                          ItemsSource="{Binding Styles}">
+                    <MenuItem.ItemContainerStyle>
+                        <Style TargetType="MenuItem">
+                            <Setter Property="Header"
+                                    Value="{Binding}"/>
+                            <Setter Property="Command"
+                                    Value="{Binding DataContext.ChangeSpeakerCommand, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=Window}}"/>
+                            <Setter Property="CommandParameter"
+                                    Value="{Binding}"/>
+                        </Style>
+                    </MenuItem.ItemContainerStyle>
+                </MenuItem>
+                <Separator/>
+                <MenuItem Header="ショートカットキーの設定" Command="{Binding OpenShortcutSettingCommand}"></MenuItem>
+            </MenuItem>
+            <MenuItem Header="実行">
+                <MenuItem Header="手動設定">
+                    <MenuItem Header="実行"
+                              Command="{Binding RunCommand}"
+                              IsEnabled="{Binding IsRunning, Converter={StaticResource ReverseConverter}}"/>
+                    <MenuItem Header="クリップボードの画像から実行"
+                              Command="{Binding RunWithClipboardImageCommand}"
+                              IsEnabled="{Binding IsRunning, Converter={StaticResource ReverseConverter}}"/>
+                </MenuItem>
+                <MenuItem Header="プリセット実行" ItemsSource="{Binding Presets}">
+                    <MenuItem.ItemContainerStyle>
+                        <Style TargetType="MenuItem">
+                            <Setter Property="Header"
+                                    Value="{Binding}"/>
+                            <Setter Property="Command"
+                                    Value="{Binding DataContext.RunWithPresetCommand, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=Window}}"/>
+                            <Setter Property="CommandParameter"
+                                    Value="{Binding}"/>
+                        </Style>
+                    </MenuItem.ItemContainerStyle>
+                </MenuItem>
+                <MenuItem Header="停止"
+                          Command="{Binding StopCommand}"
+                          IsEnabled="{Binding IsRunning}"/>
+            </MenuItem>
+            <MenuItem Header="開発用">
+                <MenuItem Header="テスト" Command="{Binding TestCommand}"/>
+            </MenuItem>
+        </Menu>
+
+        <Border Grid.Row="1" Padding="7">
+            <StackPanel>
+                <StackPanel Orientation="Horizontal">
+                    <u:LabeledSlider 
+                        Minimum="0.5"
+                        Maximum="2.0" 
+                        Frequency="0.01" 
+                        Value="{Binding Speed, Converter={StaticResource RoundConverter}}"
+                        SliderWidth="120.0"
+                        Label="読み上げスピード"
+                        LabelWidth="120"/>
+                    <TextBlock Text="{Binding SelectedSpeaker, StringFormat=ボイス：{0}}"/>
+                </StackPanel>
+                <Expander Header="手動設定" Margin="0 5 0 0">
+                    <StackPanel Orientation="Horizontal">
+                        <u:LabeledSlider 
+                            Minimum="0"
+                            Maximum="255" 
+                            Frequency="1" 
+                            Value="{Binding Threshold, Converter={StaticResource RoundConverter}}"
+                            SliderWidth="120.0"
+                            Label="フィルターのしきい値"
+                            LabelWidth="135"/>
+                        <TextBlock Text="｜"/>
+                        <TextBlock Text="{Binding CaptureArea, StringFormat=キャプチャ範囲：{0}, FallbackValue='キャプチャ範囲：left: 0, top: 0, width: 0, height: 0'}"/>
+                        <Button Padding="10 0" Margin="10 0" Command="{Binding ChangeCaptureAreaCommand}">範囲変更</Button>
+                    </StackPanel>
+                </Expander>
+            </StackPanel>
+        </Border>
+
+        <Separator Grid.Row="2"/>
+
+        <Image Grid.Row="3"
+               Stretch="Uniform"
+               Source="{Binding Image}"/>
+
+        <ListBox
+            Grid.Row="4"
+            ItemsSource="{Binding Sections}"
+            SelectedItem="{Binding SelectedSection}"
+            ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+            ScrollViewer.VerticalScrollBarVisibility="Visible">
+            <ListBox.ContextMenu>
+                <ContextMenu>
+                    <MenuItem Header="再生"
+                              Command="{Binding ReplayCommand}"/>
+                </ContextMenu>
+            </ListBox.ContextMenu>
+            <ListBox.ItemTemplate>
+                <DataTemplate>
+                    <Border x:Name="background"
+                            BorderThickness="0 0 0 1">
+                        <TextBlock Text="{Binding Text}"
+                                   MaxWidth="{Binding Width, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=ListBoxItem}}"/>
+                    </Border>
+                    <DataTemplate.Triggers>
+                        <DataTrigger Binding="{Binding IsPlaying}"
+                                     Value="True">
+                            <Setter TargetName="background"
+                                    Property="BorderBrush"
+                                    Value="Red"/>
+                        </DataTrigger>
+                    </DataTemplate.Triggers>
+                </DataTemplate>
+            </ListBox.ItemTemplate>
+        </ListBox>
+    </Grid>
+</Window>

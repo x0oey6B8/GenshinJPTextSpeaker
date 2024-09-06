@@ -1,0 +1,58 @@
+﻿<Window x:Class="GenshinJPTextSpeaker.ShortcutWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:GenshinJPTextSpeaker"
+        mc:Ignorable="d"
+        Title="ショートカットキーの設定" Height="450" Width="600" MinWidth="600">
+    <Window.Resources>
+        <DataTemplate x:Key="ItemTemplate">
+            <StackPanel Orientation="Horizontal" Height="30">
+                <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                    <TextBlock Width="150">
+                        <Run Text="{Binding Name, FallbackValue=設定名}"/>
+                        <Run Text="："/>
+                    </TextBlock>
+                    <CheckBox Content="Ctrl" IsChecked="{Binding Control}"/>
+                    <CheckBox Content="Alt" IsChecked="{Binding Alt}" Margin="3 0"/>
+                    <CheckBox Content="Shift" IsChecked="{Binding Shift}"/>
+                    <TextBlock Text=" ＋ "/>
+                </StackPanel>
+                <Button 
+                    Height="20" Margin="5 0" Padding="5 0"
+                    ToolTipService.InitialShowDelay="0"
+                    ToolTip="キー変更"
+                    Content="{Binding Key}"
+                    Command="{Binding ChangeKeyCommand}">
+                </Button>
+                <Button Height="20" Margin="5 0" Padding="5 0" Command="{Binding ClearKeyCommand}">
+                    クリア
+                </Button>
+                <CheckBox Content="キー入力ブロック" VerticalAlignment="Center" IsChecked="{Binding KeyCancel}"/>
+            </StackPanel>
+        </DataTemplate>
+        <Style TargetType="ItemsControl">
+            <Setter Property="Margin" Value="0 0 0 10"/>
+        </Style>
+        <Style x:Key="Header" TargetType="TextBlock">
+            <Setter Property="Opacity" Value="0.7"/>
+            <Setter Property="FontSize" Value="14"/>
+        </Style>
+    </Window.Resources>
+    <Window.DataContext>
+        <local:ShortcutViewModel/>
+    </Window.DataContext>
+    <ScrollViewer>
+        <Border Padding="10">
+            <StackPanel>
+                <TextBlock Text="システム" Style="{StaticResource Header}"/>
+                <ItemsControl Padding="5" ItemsSource="{Binding SystemSettings}" ItemTemplate="{StaticResource ItemTemplate}"/>
+                <TextBlock Text="手動実行" Style="{StaticResource Header}"/>
+                <ItemsControl Padding="5" ItemsSource="{Binding ManualSettings}" ItemTemplate="{StaticResource ItemTemplate}"/>
+                <TextBlock Text="プリセット" Style="{StaticResource Header}"/>
+                <ItemsControl Padding="5" ItemsSource="{Binding PresetSettings}" ItemTemplate="{StaticResource ItemTemplate}"/>
+            </StackPanel>
+        </Border>
+    </ScrollViewer>
+</Window>
